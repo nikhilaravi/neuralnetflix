@@ -1,0 +1,491 @@
+---
+title: "CS 109B: Project Milestone 2"
+subtitle: "April 10, 2017"
+output: pdf_document
+author: movienet
+---
+
+```{r, echo = FALSE}
+set.seed(109) # Set seed for random number generator
+```
+
+# Honor Code
+
+The midterm must be completed entirely on your own, and may not be discussed with anybody else.
+
+- You have to write your solutions entirely on your own.
+- You cannot share written materials or code with anyone else.
+- You may not provide or make available solutions to individuals who take or may take this course in the future.
+
+Your submitted code will be automatically checked for plagiarism. If you are using external resources, make sure to indicate the sources.
+
+### The Harvard College Honor Code
+
+Members of the Harvard College community commit themselves to producing academic work of integrity – that is, work that adheres to the scholarly and intellectual standards of accurate attribution of sources, appropriate collection and use of data, and transparent acknowledgement of the contribution of others to their ideas, discoveries, interpretations, and conclusions. Cheating on exams or problem sets, plagiarizing or misrepresenting the ideas or language of someone else as one’s own, falsifying data, or any other instance of academic dishonesty violates the standards of our community, as well as the standards of the wider world of learning and affairs.
+
+# Introduction
+
+In this exam we're asking you to work with measurements of genetic expression for patients with two related forms of cancer: Acute Lymphoblastic Leukemia (ALL) and Acute Myeloid Leukemia (AML). We ask you to perform two general tasks: (1) Cluster the patients based only on their provided genetic expression measurements and (2) classify samples as either ALL or AML using Support Vector Machines.
+
+In the file `MT2_data.csv`, you are provided a data set containing information about a set of 72 different tissue samples. The data have already been split into training and testing when considering the SVM analyses, as the first column indicates. The first 34 samples will be saved for testing while the remaining 38 will be used for training. Columns 2-4 contain the following general information about the sample:
+
+- ALL.AML: Whether the patient had AML or ALL.
+- BM.PB: Whether the sample was taken from bone marrow or from peripheral blood.
+- Gender: The gender of the patient the sample was obtained from.
+
+Note that some of the samples have missing information in these columns. Keep this in mind when conducting some of the analyses below. The remaining columns contain expression measurements for 107 genes. You should treat these as the features. The genes have been pre-selected from a set of about 7000 that are known to be relevant to, and hopefully predictive of, these types of cancers.
+
+# Problem 1: Clustering [60 points]
+
+```{r}
+library(cluster)
+library(factoextra)
+library(mclust)
+library(corrplot)
+library(dbscan)
+library(MASS)
+library(ggplot2)
+library(ggfortify)
+library(NbClust)
+library('e1071')
+library(caret)
+library(gridExtra)
+
+#Read in Data
+dataset <- read.csv("MT2_data.csv", header = T)
+```
+
+
+For the following, **you should use all 72 samples** -- you will only use the genetic information found in columns 5-111 of the dataset. The following questions are about performing cluster analysis of the samples using only genetic data (not columns 2-4). 
+
+(a) (10 points) Standardize the gene expression values, and compute the Euclidean distance between each pair of genes. Apply multi-dimensional scaling to the pair-wise distances, and generate a scatter plot of genes in two dimension. By visual inspection, into how many groups do the genes cluster?  If you were to apply principal components analysis to the standardized data and then plot the first two principal components, how do you think the graph would differ? Briefly justify. (you do not need to perform this latter plot)
+
+```{r}
+# Only use columns 5-111
+data1 <- dataset[5:111]
+
+# Visualize euclidean distance
+data1.dist <- daisy(data1, metric="euclidean",stand=T)
+fviz_dist(data1.dist,
+   gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+
+# Apply MDS
+data1.cmd <- cmdscale(data1.dist)
+data1.cmd <- data.frame(dim1=data1.cmd[,1],dim2=data1.cmd[,2])
+ggplot(data1.cmd, aes(x=dim1, y=dim2)) +
+  geom_point() +  
+  geom_density2d() + # Add 2d density estimation
+  ggtitle("2D scaling of pair-wise distances")
+
+# Apply PCA just to see
+autoplot(prcomp(scale(data1))) + 
+  geom_density2d() +
+  ggtitle("First two principal components")
+```
+
+It looks like the tissue samples are being clustered into 8 clusters, with two being very large at (0,0) and to the right at (5,0). The other six clusters are scattered around these two large clusters. We plotted a heat map too just to visualize, and we definitely see some tissue samples being similar to each other on the upper right quadrant (blues). The PCA plot looks similar, but reflected across 0 on the PC1/Dim1 axis. From the PC plot the two large clusters are a little clearer with their own circle centers, and the other seven small clusters that surround them. There are about 3 outliers that are outside these clusters.
+
+
+(b) (10 points) Apply **Partitioning around medoids** (PAM) to the data, selecting the optimal number of clusters based on the Gap, Elbow and Silhouette statistics -- if the they disagree, select the largest number of clusters indicated by the statistics. Summarize the results of clustering using a principal components plot, and comment on the quality of clustering using a Silhouette diagnostic plot.
+
+```{r}
+#GAP
+gapstat.pam = clusGap(scale(data1),FUN=pam,K.max=10,B=500,d.power=2)
+fviz_gap_stat(gapstat.pam, 
+  maxSE=list(method="Tibs2001SEmax",SE.factor=1)) + 
+  ggtitle("PAM clustering GAP statistic") 
+
+# Elbow plot
+fviz_nbclust(scale(data1), pam, method="wss") + 
+  ggtitle("PAM clustering Elbow Plot") +
+  geom_vline(xintercept=3,linetype=2) # Bend is not very clear but it is likely at 3
+
+# Average silhouette method
+fviz_nbclust(scale(data1),pam,method="silhouette") +
+  ggtitle("PAM clustering Average Silhouette Method") 
+```
+
+GAP statistic suggests 2 clusters. Elbow plot isn't that clear but suggests 3 clusters. Average silhouette method suggests 2 clusters. Although 3 is greater, I will end up choosing 2 clusters because the elbow plot kink isn't that obvious, the max from the average silhouette method is very distinct and GAP statistic also chose 3.
+
+```{r}
+# Principal components plot
+data1.pam = pam(scale(data1),k=2)
+fviz_cluster(data1.pam, data = scale(data1),
+  main="PAM clustering Principal Components Plot")
+```
+
+We can see the two clusters being clearly separated with not much overlap and a small number of points at the boundary (i.e. 25, etc.). Cluster 1 on the right is noticeably larger than Cluster 2 on the left. There are some outliers within each cluster. For Cluster 1, the outliers are to the bottom (i.e. 54 and 5). For Cluster 2, the outliers are to the left (i.e. 33 and 72). However, in general both clusters are still pretty tightly packed in the center.
+
+
+```{r}
+# Silhouette diagnostics plot
+fviz_silhouette(silhouette(data1.pam),
+  main="Silhouette plot for PAM clustering")
+```
+
+The silhouette plot shows that there are very few tissue samples that are misclassified (likely about 6). All the misclassified samples (si < 0) are from Cluster 2. Hence, Cluster 1 is very well classified.
+
+
+(c) (10 points) Apply **Agglomerative clustering** (AGNES) with Ward's method to the data. Summarize the results using a dendrogram. Determine the optimal number of clusters in a similar way as in (b), and add rectangles to the dendrograms sectioning off clusters.  Comment on the ways (if any) the results of PAM differ from those of AGNES.
+
+```{r}
+# Agglomerative clustering with Ward
+agnes.reformat<-function(x,k){
+  x.agnes = agnes(x,method="ward",stand=T)
+  x.cluster = list(cluster=cutree(x.agnes,k=k))
+  return(x.cluster)
+}
+```
+
+```{r}
+# We use GAP, Elbow and Silo again to determine the optimal clusters
+
+#GAP
+gapstat.agnes = clusGap(scale(data1),FUN=agnes.reformat,
+                        K.max=10,B=500,d.power=2)
+fviz_gap_stat(gapstat.agnes, 
+  maxSE=list(method="Tibs2001SEmax",SE.factor=1)) + 
+  ggtitle("AGNES clustering GAP Statistic") 
+
+#Elbow
+fviz_nbclust(scale(data1), agnes.reformat, method="wss") + 
+  ggtitle("AGNES clustering Elbow Plot") +
+  geom_vline(xintercept=3,linetype=2)
+
+#Silo
+fviz_nbclust(scale(data1),agnes.reformat,method="silhouette") +
+  ggtitle("AGNES clustering Average Silhouette Method") 
+```
+
+The Gap statistic suggests there is no evidence in any clusters (k = 1). The bend in the elbow plot appears at k = 3, but that is not very clear. The silhouette plot has a max at k = 2. We end up choosing k = 2 again because the elbow plot bend is not clear at all. By choosing k = 2, we can also easily compare agglomerative clustering with PAM clustering earlier.
+
+```{r}
+# Plot dendogram
+data1.agnes <- agnes(data1,method='ward',stand=T)
+pltree(data1.agnes, cex=0.5, hang= -1,
+  main="AGNES fit (Ward's method) of tissue samples data",
+  xlab="Tissue",sub="")
+rect.hclust(data1.agnes,k=2,border=2:5)
+```
+
+The two clusters in the dendogram look rather separated out. The left cluster (red) on average seems to have a lower depth than the right cluster (green). This suggests that the right cluster has more sub-clusters than the left cluster.
+
+
+```{r}
+# Compare agnes with pam
+
+# Principal components plot
+grp.agnes = cutree(data1.agnes, k=2)
+fviz_cluster(list(data = scale(data1), cluster = grp.agnes),
+  main="Agglomerative clustering Principal Components Plot")
+```
+
+Unlike PAM clustering where Clusters 1 and 2 are a lot more well-separated, AGNES clustering has quite a bit of overlap. With AGNES, Cluster 2 seems to have larger width and eats into some of the tissue samples of Cluster 1.
+
+
+(d) (10 points) Apply **Fuzzy clustering** (FANNY) to the data, determining the optimal number of clusters as in (b). Summarize the results using both a principal components plot, and a correlation plot of the cluster membership weights.  Based on the cluster membership weights, do you think it makes sense to consider summarizing the results using a principal components plot?  Briefly justify.
+
+```{r warning=F, cache=T}
+#GAP
+gapstat.fuzz = clusGap(scale(data1),FUN=fanny,K.max=6,B=500,
+                       memb.exp=1.1,maxit=1000,d.power=2)
+fviz_gap_stat(gapstat.fuzz, 
+  maxSE=list(method="Tibs2001SEmax",SE.factor=1)) + 
+  ggtitle("Fuzzy Clustering GAP Statistic") 
+
+# Elbow plot
+fviz_nbclust(scale(data1), fanny, method="wss") + 
+  ggtitle("Fuzzy clustering Elbow Plot") +
+  geom_vline(xintercept=2,linetype=2)
+
+#Silo
+fviz_nbclust(scale(data1),fanny,method="silhouette",memb.exp=1.5,maxit=1000) +
+  ggtitle("Fuzzy Clustering Average Silhouette Method")
+```
+
+The Gap statistic suggests there is no evidence in any clusters (k = 1). The bend in the elbow plot appears at k = 2. The silhouette plot has a max at k = 2, but has the same max all the way till k = 8. We end up choosing k = 2 again because the elbow plot and silhouette plots agree at this k. By choosing k = 2, we can also easily compare fuzzy clustering with our two earlier clustering methods.
+
+```{r}
+# Principal components plot
+data1.fuzz <- fanny(scale(data1),k=2,memb.exp=1.1)
+fviz_cluster(data1.fuzz,
+  main="FANNY fit - 2 clusters")
+
+# Correlation plot
+corrplot(data1.fuzz$membership, is.corr=F)
+```
+
+Fuzzy clustering gives a very clear partitioning with no overlap at all between the two clusters. This clustering is similar to PAM and AGNES clustering. In terms of how well-separated the clusters are, in descending order: Fuzzy, PAM, AGNES. Fuzzy clustering has both clusters that are similarly sized, unlike PAM clustering where Cluster 1 is noticeably a lot larger.
+
+From the correlation plot, we can see that approximately 1/4 of the tissue samples have quite equal membership to be in both clusters (both dots being equally dark). Equal membership probabilities suggest that the tissue sample could likely be assigned to either of the two clusters.
+
+```{r}
+# Silhouette plot to make sure, given the highly equal membership 
+# probabilities from correlation plot
+fviz_silhouette(silhouette(data1.fuzz$clustering,dist=data1.dist),
+  main="Silhouette plot for Fuzzy clustering")
+```
+
+As we can see from the silhouette plot (and earlier from the correlation plot where membership probabilities are quite similar) that there is quite a great deal of misclassification. Despite cluster 1 being completely correctly classified, nearly half of cluster 2 is misclassified. With the common trend of all three clustering methods making mistakes on Cluster 2, it seems like it is a lot easier to misclassify a Cluster 1 tissue sample as Cluster 2 than vice versa. **Hence, with this great deal of misclassification, we cannot really trust our principal components plot.**
+
+
+(e) (20 points) For the clusters found in parts (b)-(d), select just one of the clusterings, preferably with the largest number of clusters. For this clustering, what proportion of each cluster are ALL (Acute Lympohblastic Leukemia) samples? In each cluster, what proportion are samples belonging to female subjects? In each cluster, what proportion of the samples were taken from bone marrow as opposed to peripheral blood? What, if anything, does this analysis imply about the clusters you discovered?
+
+```{r}
+# We select PAM clustering as misclassification from the 
+# silhouette plot seems to be lowest
+
+# Proportion of each cluster that are ALL samples
+
+bitvector <- data1.pam$clustering
+size_1 <- length(bitvector[bitvector == 1])
+size_2 <- length(bitvector[bitvector == 2])
+
+y <- dataset$ALL.AML
+genders <- dataset$Gender
+bmpb <- dataset$BM.PB
+
+ALLcount_1 <- 0
+ALLcount_2 <- 0
+femalecount_1 <- 0
+femalecount_2 <- 0
+bmcount_1 <- 0
+bmcount_2 <- 0
+
+for (i in 1:length(y)) {
+  cluster_num <- bitvector[i]
+  if (is.na(cluster_num)) { # Skip missing values
+    next
+  }
+  if (cluster_num == 1) { # First cluster
+    if (y[i] == 'ALL') {
+      ALLcount_1 <- ALLcount_1 + 1
+    }
+    if (genders[i] == 'F') {
+      femalecount_1 <- femalecount_1 + 1
+    }
+    if (bmpb[i] == 'BM') {
+      bmcount_1 <- bmcount_1 + 1
+    }
+  } else { # Second cluster
+    if (y[i] == 'ALL') {
+      ALLcount_2 <- ALLcount_2 + 1
+    }
+    if (genders[i] == 'F') {
+      femalecount_2 <- femalecount_2 + 1
+    }
+    if (bmpb[i] == 'BM') {
+      bmcount_2 <- bmcount_2 + 1
+    }
+  }
+}
+
+paste('Proportion of Cluster 1 that is ALL: ', ALLcount_1 / size_1)
+paste('Proportion of Cluster 2 that is ALL: ', ALLcount_2 / size_2)
+print('======================================')
+paste('Proportion of Cluster 1 that is Female: ', femalecount_1 / size_1)
+paste('Proportion of Cluster 2 that is Female: ', femalecount_2 / size_2)
+print('======================================')
+paste('Proportion of Cluster 1 that is BM: ', bmcount_1 / size_1)
+paste('Proportion of Cluster 2 that is BM: ', bmcount_2 / size_2)
+
+```
+Here we realize that the clusters are likely clustered according to whether a patient has ALL or not, compared to whether they are female, or whether their samples were taken from bone marrow. This is because the difference in proportions between both clusters is the largest for ALL compared to the other two variables. 
+
+86% of Cluster 1 have ALL, while only 14% of Cluster 2 have ALL; hence these two clusters separate the ALL patients from the rest quite well. 41% of Cluster 1 are female while only 9% of Cluster 2 are female - this is not as drastic a difference as the ALL difference, but there is still a significant different in the percentage of females in each cluster. This might even point to a possible conclusion that there is an association between being female and contracting ALL (perhaps females are more likely to contract ALL?). For BM, both clusters have an equal proportion. This means by clustering patients into clusters based on their tissue samples we aren't able to distinguish between BM and not, as opposed to being able to distinguish whether they are ALL or not quite well.
+
+
+# Problem 2: Classification [40 points]
+
+For the following problem, we will not be using the general information about the sample due to missing values. Subset the columns keeping only the ALL.AML and the 107 genetic expression values. Then split the samples into two datasets, one for training and one for testing, according to the indicator in the first column. There should be 38 samples for training and 34 for testing. 
+
+```{r}
+# Partition data into train and test based on column
+
+X <- data1
+y <- dataset$ALL.AML
+
+train <- dataset[dataset$Train.Test == 'Train',]
+test <- dataset[dataset$Train.Test == 'Test',]
+
+X_train <- train[5:111]
+y_train <- train[2]
+X_test <- test[5:111]
+y_test <- test[2]
+train <- cbind(y_train, X_train)
+test <- cbind(y_test, X_test)
+
+paste(nrow(X_train), nrow(y_train)) # 38
+paste(nrow(X_test), nrow(y_test)) # 34
+```
+
+The following questions essentially create a diagnostic tool for predicting whether a new patient likely has Acute Lymphoblastic Leukemia or Acute Myeloid Leukemia based only on their genetic expression values.
+
+(a) (15 points) Fit two SVM models with linear and RBF kernels to the training set, and report the classification accuracy of the fitted models on the test set. Explain in words how linear and RBF kernels differ as part of the SVM. In tuning your SVMs, consider some values of `cost` in the range of 1e-5 to 1 for the linear kernel and for the RBF kernel, `cost` in the range of 0.5 to 20  and `gamma` between 1e-6 and 1. Explain what you are seeing. 
+
+```{r cache=T}
+# Test with certain standard gamma and cost values first 
+
+# Linear SVM
+svm.linear <- svm(ALL.AML ~ ., data=train, kernel='linear', cost=1) # Normalize SVM
+confusionMatrix(test$ALL.AML, predict(svm.linear, test))
+```
+
+```{r}
+# Radial SVM
+svm.RBF <- svm(ALL.AML ~ ., data=train, kernel='radial', gamma=1, cost=1)
+confusionMatrix(test$ALL.AML, predict(svm.RBF, test))
+```
+Before tuning, it seems linear SVM is a lot better than radial SVM. Radial SVM simply predicts ALL for all samples, and achieves an accuracy of 58.82%, while Linear SVM has an accuracy of 88.24%. Let's use cross-validation to tune our hyperparams to improve both SVM's results. 
+
+The linear kernel is a linear model, while the RBF kernel uses normal curves around the data points, and sums these so that the decision boundary can be defined by a type of topology condition such as curves where the sum is above a value of 0.5. Linear kernel tends to be much faster than RBF kernel. However, Linear SVM's performance is not more accurate than a properly tuned RBF SVM.
+
+```{r, cache=T}
+
+# Tune Linear SVM
+
+costs = seq(1e-5, 2e-2, 1e-4)
+
+train.err = test.err = NULL
+m = list()
+for(i in 1:length(costs)){
+  m[[i]] <- svm(ALL.AML ~ ., data = train, cost = costs[i], kernel = 'linear')
+  train.err[i] = 1 - mean(predict(m[[i]], train) == train$ALL.AML)
+  test.err[i] = 1 - mean(predict(m[[i]], test) == test$ALL.AML)
+}
+
+plot(costs, train.err, type = 'o', pch = 20, 
+     ylim = range(c(train.err, test.err)), col = 'gray', 
+     xlab = 'cost', ylab = 'Error Rate')
+points(costs, test.err, type = 'o', pch = 20, col = 'red')
+legend('topright', c('Training Error', 'Testing Error'), pch = 20, col = c('gray','red'))
+```
+
+From tuning linear SVM, we see that after a cost of about 0.008, the error rates for train and test sets are flat. However, to be exactly clear we can use the tune function to tune our linear SVM. (Note: I just did this as an exercise to visualize what's going on; I know this is not entirely necessary, which is why for future questions I only use the tune function and not plot.)
+
+```{r cache=T}
+# Tune Linear SVM
+tc <- tune.control(cross = 3) # 3-fold cross validation
+tuneResult.linear <- tune(svm, ALL.AML ~ ., 
+                          data = train, kernel = "linear", 
+                          ranges = list(cost = 10^(-5:0)), 
+                          tunecontrol=tc)
+```
+
+
+```{r}
+# Predict using tuned Linear SVM
+cost.linear <- tuneResult.linear$best.parameters$cost
+svm.tuned.linear <- svm(ALL.AML ~ ., data=train, kernel='linear', cost=cost.linear)
+confusionMatrix(test$ALL.AML, predict(svm.tuned.linear, test))
+```
+We see no change in accuracy. However, linear SVM's accuracy at 88.24% is already really good. Let's see if we can tune our RBF SVM to do better.
+
+```{r cache=T}
+# Tune RBF SVM
+tc <- tune.control(cross = 3) # 3-fold cross validation
+tuneResult.RBF <- tune(svm, ALL.AML ~ ., 
+                       data = train, kernel = "radial", 
+                       ranges = list(gamma = 10^(-6:0), cost = 2^(-1:5)), 
+                       tunecontrol=tc)
+```
+
+
+```{r}
+# Predict using tuned RBF SVM
+gamma.RBF <- tuneResult.RBF$best.parameters$gamma
+cost.RBF <- tuneResult.RBF$best.parameters$cost
+svm.tuned.RBF <- svm(ALL.AML ~ ., 
+                     data=train, kernel='radial', 
+                     gamma=gamma.RBF, cost=cost.RBF)
+confusionMatrix(test$ALL.AML, predict(svm.tuned.RBF, test))
+```
+The Radial SVM after tuning makes the exact same predictions as the Linear SVM, and gets an accuracy of 88.24% too. Both SVMs predicted all the ALL's correctly, but misclassified 4 out of 14 of the AML's. 
+
+
+(b) (10 points) Apply principal component analysis (PCA) to the genetic expression values in the training set, and retain the minimal number of PCs that capture at least 90% of the variance in the data. How does the number of PCs identified compare with the total number of gene expression values?  Apply to the test data the rotation that resulted in the PCs in the training data, and keep the same set of PCs.
+
+```{r}
+# Apply PCA
+train.pca <- prcomp(X_train, scale=T, center=T)
+
+# Normalize the vector of variances
+train.pca.vars <- (train.pca$sdev)^2
+train.pca.vars.norm <- train.pca.vars/(sum(train.pca.vars))
+
+PCA.90pc.last.eigenvector <- min(which(cumsum(train.pca.vars.norm) >= 0.90))
+paste('Minimal number of PCs to capture at least 90% of variance: ', 
+      PCA.90pc.last.eigenvector)
+```
+
+```{r}
+# Plot the components
+plot(summary(train.pca)$importance[3,], type="l", 
+     ylab="proportion of var", xlab="nth component", col="black")
+abline(h=0.90,col="red")
+abline(v=23,col="red",lty=5) # 23 PCs retained
+```
+
+As we can see from the graph, the first 23 components already capture at least 90% of the variance in the training data. Hence we will only use the first 23 components, which reduces the number of features from 107 (total number of tissue sample types) to 23.
+
+```{r}
+# Reduce train and test set to use PC scores as predictors
+PCA.90pc.vectors <- train.pca$rotation[,1:PCA.90pc.last.eigenvector]
+PC.scores.train <- train.pca$x[,1:PCA.90pc.last.eigenvector]
+
+# Apply to test the same rotations
+test.scaled <- scale(X_test, center = train.pca$center, 
+                     scale = train.pca$scale)
+PC.scores.test <- test.scaled %*% 
+  train.pca$rotation[,1:PCA.90pc.last.eigenvector]
+
+# Convert ALL.AMF and PC scores to data.frames in order to use the SVM
+train.df <- data.frame(y_train, PC.scores.train)
+colnames(train.df)[1] <- c("ALL.AML")
+
+test.df <- data.frame(y_test,PC.scores.test)
+colnames(test.df)[1]  <- c("ALL.AML")
+```
+
+
+(c) (15 points) Fit a SVM model with linear and RBF kernels to the reduced training set, 
+and report the classification accuracy of the fitted models on the reduced test set. Do not forget to tune the regularization and kernel parameters by cross-validation. How does the test accuracies compare with the previous models from part (a)? What does this convey? *Hint*: You may use similar ranges for tuning as in part (a), but for the RBF kernel you may need to try even larger values of `cost`, i.e. in the range of 0.5 to 40. 
+
+```{r cache=T}
+# Tune Linear SVM
+tc <- tune.control(cross = 3) # 3-fold cross validation
+tuneResult.linear.pc <- tune(svm, ALL.AML ~ ., 
+                          data = train.df, kernel = "linear", 
+                          ranges = list(cost = 10^(-5:0)), 
+                          tunecontrol=tc)
+```
+
+```{r}
+# Predict using tuned Linear SVM
+cost.linear.pc <- tuneResult.linear.pc$best.parameters$cost
+svm.tuned.linear.pc <- svm(ALL.AML ~ ., data=train.df, kernel='linear', 
+                           cost=cost.linear.pc)
+confusionMatrix(test.df$ALL.AML, predict(svm.tuned.linear.pc, test.df))
+```
+Unfortunately, the performance of the tuned linear SVM on PCA scores has lower accuracy of 85.29%. One more of the AML's were misclassified this time. Let's try the RBF SVM.
+
+```{r cache=T}
+# Tune RBF SVM
+tc <- tune.control(cross = 3) # 3-fold cross validation
+tuneResult.RBF.pc <- tune(svm, ALL.AML ~ ., 
+                       data = train.df, kernel = "radial", 
+                       ranges = list(gamma = 10^(-6:0), cost = seq(0.5,40,0.5)), 
+                       tunecontrol=tc)
+```
+
+```{r}
+# Predict using tuned RBF SVM
+gamma.RBF.pc <- tuneResult.RBF.pc$best.parameters$gamma
+cost.RBF.pc <- tuneResult.RBF.pc$best.parameters$cost
+svm.tuned.RBF.pc <- svm(ALL.AML ~ ., 
+                     data=train.df, kernel='radial', 
+                     gamma=gamma.RBF.pc, cost=cost.RBF.pc)
+confusionMatrix(test.df$ALL.AML, predict(svm.tuned.RBF.pc, test.df))
+```
+The tuned RBF SVM has the exact same accuracy of 85.29% as the tuned linear SVM, making the exact same predictions. Hence both the accuracies of linear and RBF SVM are slightly lower for that on the PC scores as compared to the original data points. However, only one more point is misclassified for the significant reduction in dimension (and much faster run time!). Hence, it is still worth it to first reduce the dimension with PCA, then run SVM on the PC scores of the components that capture more than 90% variance to classify the data.
+
