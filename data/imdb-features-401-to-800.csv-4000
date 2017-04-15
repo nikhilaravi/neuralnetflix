@@ -1,0 +1,196 @@
+imdb_id,director,imdb_votes,certificate,num_stunts,num_fx
+367959.0,Peter Webber,89574,18,24,35
+246894.0,John McTiernan,22741,R,74,4
+1788383.0,Brian A Miller,3048,18,5,2
+58379.0,Ishirô Honda,5114,Unrated,1,5
+2675914.0,Hans Petter Moland,13993,15,6,7
+110882.0,Milcho Manchevski,11698,15,2,2
+1068641.0,Guillermo Arriaga,15990,15,8,8
+2449810.0,Bryan Ortiz,1414,16,5,4
+1382720.0,Johan Nijenhuis,209,U,10,6
+4000956.0,Osmany Rodriguez,588,12,5,1
+1534084.0,Éric Besnard,798,12,11,2
+65446.0,Sam Peckinpah,6628,12,4,1
+3029476.0,Ron Scalpello,3333,15,1,10
+79240.0,Michael Crichton,12223,PG,1,2
+119951.0,Betty Thomas,30263,18,6,1
+90056.0,John Landis,36228,PG,30,9
+75342.0,Charles B. Pierce,4850,R,1,1
+104905.0,Greg Beeman,3566,PG,44,29
+94006.0,Howard Deutch,21121,PG-13,8,1
+112255.0,Sang-ok Shin,4405,PG,90,14
+105585.0,Michael Apted,11758,15,24,3
+1711465.0,Arne Toonen,531,AL,3,6
+4344878.0,Leste Chen,745,PG,1,1
+1485749.0,Andrew Adamson,2819,PG13,2,4
+109447.0,Paul Flaherty,5698,PG,6,15
+1360767.0,Keoni Waxman,3665,18,45,7
+4505432.0,Martin Schreier,236,12,15,4
+482629.0,Michael O. Sajbel,14803,PG,3,5
+1866570.0,Christopher Smith,2595,18,11,1
+105399.0,Ringo Lam,9017,12,15,1
+300140.0,Lukas Moodysson,36728,18,4,1
+2262161.0,Terence Davies,2151,15,1,5
+398027.0,David Jacobson,16863,15,19,3
+337960.0,Jeff Balsmeyer,4414,PG,10,5
+250081.0,Todd Solondz,15633,Unrated,2,6
+106922.0,Andy Sidaris,626,16,1,1
+357585.0,Matthew Hastings,4134,15,1,3
+75147.0,Richard Lester,9246,PG,2,1
+119123.0,Félix Enríquez Alcalá,14199,18,71,8
+469937.0,David Nelson,2069,PG,14,2
+258816.0,Paul McGuigan,5092,15,6,12
+34248.0,Alfred Hitchcock,24901,Approved,1,1
+110017.0,Harley Cokeliss,1571,M/12,13,9
+120756.0,Franc Roddam,3169,PG,6,10
+2336630.0,Kevin Fair,1004,12,1,1
+371739.0,Alexander Bulkley,6374,15,2,5
+109450.0,Ron Shelton,6110,18,12,3
+227277.0,Marcelo Piñeyro,5276,18,1,1
+438859.0,Bille August,10501,PG-12,3,3
+489279.0,Patricia Harrington,749,M18,2,1
+1434435.0,Darren Lynn Bousman,13474,18,11,2
+85811.0,Peter Yates,24392,PG,56,20
+93966.0,Michael Cimino,3789,R,6,4
+210628.0,Robert Harmon,1486,12,16,1
+79437.0,Jonathan Demme,1846,R,4,2
+74279.0,Paul Bartel,3501,R,3,1
+416243.0,Anthony Hickox,4091,15,41,28
+338139.0,Katja von Garnier,4933,M/12,17,4
+1060255.0,Steven Kastrissios,4240,18,6,1
+1100119.0,Robert Rodriguez,5505,PG,13,13
+69495.0,Peter Bogdanovich,14998,G,31,1
+56891.0,George Sidney,5989,Approved,1,1
+95484.0,Frank LaLoggia,5027,PG-13,4,7
+295173.0,Christian McIntire,855,18,8,1
+46789.0,Rudolph Maté,1115,Approved,3,1
+271136.0,John Mackenzie,1914,15,10,3
+2194826.0,Basel Owies,2076,16,10,1
+964539.0,Marc Schölermann,27604,18,17,7
+343996.0,Andy Garcia,8532,15,1,1
+116684.0,Franco Zeffirelli,7853,PG,2,3
+1260995.0,Ernie Barbarash,1712,15,18,10
+207275.0,David Carson,14846,T,6,8
+279231.0,Vincent Bal,3843,7,5,3
+60177.0,John Guillermin,5310,Approved,12,4
+493264.0,Serdar Akar,15016,M/16,6,7
+32484.0,Alfred Hitchcock,14287,TV-PG,1,3
+119167.0,Michael Haneke,47114,18,3,3
+356614.0,William Phillips,8390,15,11,9
+110428.0,Nicholas Hytner,12552,PG,3,3
+120617.0,Tom Clegg,3312,15,6,4
+1986843.0,Pascal Chaumeil,5965,10,4,3
+1074929.0,Atom Egoyan,2849,15,4,7
+119707.0,John R. Leonetti,37905,15,39,22
+486028.0,Robby Henson,4121,15,3,1
+99128.0,Alan Alda,2927,R,23,1
+100934.0,Zalman King,9416,R,2,4
+252299.0,Gregor Jordan,21138,15,19,9
+120576.0,Randa Haines,5065,PG,1,1
+1198138.0,Steve Shill,23596,12A,15,1
+3330764.0,Marcus Dunstan,4414,18,10,4
+179098.0,Brad Silberling,12289,15,3,5
+1848902.0,Jay Roach,18265,15,1,3
+2446502.0,K. King,2124,18,6,2
+104522.0,Mike Newell,2262,PG,4,5
+365658.0,Joel Soisson,1788,15,11,4
+410400.0,Gaby Dellal,2849,12A,9,2
+78856.0,Irwin Allen,3790,PG,23,4
+1629377.0,Miguel Ángel Vivas,5857,18,5,3
+340529.0,Roger Young,1111,15,11,4
+119782.0,Graeme Campbell,368,PG,2,1
+82490.0,Hans Iveberg,2790,7,6,6
+100581.0,Michele Soavi,1330,18,2,4
+134618.0,Jay Roach,22686,15,8,1
+905357.0,Carl Bessai,971,R16,3,1
+2556874.0,Julian Gilbey,6294,15,6,4
+1071880.0,Adrian Vitoria,2413,18,2,3
+1533817.0,Rob Hardy,1963,15,4,4
+75223.0,Arthur Hiller,14334,PG,10,3
+417791.0,Damien O'Donnell,12098,15,3,1
+1296077.0,Michael Steiner,2089,R21,8,4
+75809.0,Elliot Silverstein,6741,PG,6,1
+109884.0,Ermanno Olmi,343,PG,1,1
+60232.0,Arthur Penn,7262,Approved,2,1
+98350.0,Steven Lisberger,1913,PG,11,12
+78490.0,Karel Reisz,1908,R,3,2
+95444.0,Stephen Chiodo,24353,15,8,20
+98143.0,David Schmoeller,7084,18,1,2
+1532958.0,Benson Lee,8180,12,6,1
+110684.0,Robert Benton,15467,15,4,2
+1316536.0,Sean Byrne,29372,18,14,7
+234354.0,David Atkins,9767,15,10,4
+1148200.0,Deon Taylor,4483,18,13,4
+795439.0,Harris Goldberg,7315,M18,4,3
+2299248.0,Adrian Moat,1809,NC-16,2,2
+221069.0,Michael Walker,2700,13,1,1
+820466.0,Jesse V. Johnson,1088,15,25,7
+91886.0,Oliver Stone,15894,R,2,4
+1436432.0,David Michael Latt,1706,PG,4,6
+116671.0,Michael Cooney,6098,18,4,12
+218619.0,Stephen Carpenter,7425,PG-13,8,7
+1830713.0,Mike Mendez,5827,15,4,1
+109552.0,Bradford May,3827,18,29,17
+827782.0,Víctor García,7900,R,25,10
+79315.0,Jackie Chan,3030,18,2,1
+4177822.0,Timothy Woodward Jr.,196,15,34,3
+82966.0,Lucio Fulci,9616,18,1,1
+435631.0,Scott Ziehl,995,18,10,1
+387059.0,Scott McGehee,6088,12A,2,2
+117193.0,Frank A. Cappello,2037,18,11,4
+192949.0,Denys Arcand,1515,TV-MA,4,1
+1836808.0,Mike Newell,10035,12A,17,9
+114279.0,Richard Loncraine,12005,15,12,11
+760187.0,David Arquette,5376,Unrated,7,3
+451998.0,Robert Lee,1390,PG,4,1
+120903.0,Bryan Singer,478896,12,86,25
+116329.0,Carroll Ballard,20389,U,7,6
+98180.0,Joseph Zito,6710,18,17,3
+242445.0,Andrzej Bartkowiak,28334,18,78,35
+422774.0,Steve Carr,16246,PG,5,8
+119506.0,John Duigan,6558,15,5,2
+100168.0,Spike Lee,8702,R,4,4
+425945.0,Pierre Aknine,402,13,19,7
+107426.0,Bernardo Bertolucci,12880,PG,2,10
+1981107.0,Jean-Pierre Jeunet,12682,12A,5,1
+368688.0,Sidney J. Furie,1141,15,8,1
+70825.0,Burt Kennedy,3993,PG,8,2
+1477855.0,Roger Michell,9755,12A,3,5
+61747.0,Ted Post,27015,PG-13,2,2
+114928.0,Desmond Nakano,4098,15,11,3
+172669.0,Michael Lantieri,2773,15,3,7
+3918686.0,John Lyde,328,6,8,1
+2597242.0,Nicholas McCarthy,5662,15,8,2
+403522.0,Tomas Villum Jensen,1565,NC-16,2,2
+1341341.0,Max Winkler,3692,11,4,1
+34449.0,Vincent Sherman,2787,15,7,1
+1555093.0,Paul Hyett,7399,18,7,2
+79252.0,Georges Lautner,1273,16,3,3
+56142.0,Ishirô Honda,5815,Not Rated,1,6
+374569.0,Steven Soderbergh,28391,15,22,17
+79788.0,Marino Girolami,4109,(Banned),1,4
+1365474.0,Reinout Oerlemans,4560,18,5,5
+4057632.0,Kheiron,1217,12,10,1
+2012665.0,Philippe Caland,1918,15,9,1
+127349.0,Keith Gordon,6078,15,7,7
+1602472.0,Julie Delpy,12419,15,6,1
+4228294.0,Thomas Bidegain,1250,12,6,1
+2165859.0,Jeremy Lovering,6912,15,4,1
+119095.0,Charles Sturridge,4824,PG,5,3
+156323.0,Scott Alexander,7131,15,20,4
+154420.0,Thomas Vinterberg,68091,15,1,1
+93378.0,Luis Valdez,22203,PG-13,13,1
+3138192.0,Peter Hewitt,668,12,8,1
+1369667.0,Wolfgang Becker,618,12,7,5
+1196204.0,Ricky Gervais,18047,15,13,4
+105619.0,Johnnie To,2638,18,3,1
+91814.0,Thomas Michael Donnelly,3603,PG,15,1
+83655.0,Pasquale Festa Campanile,1161,15,2,1
+120662.0,Stephan Elliott,13549,18,12,7
+110944.0,Kevin Reynolds,3983,R,6,9
+118750.0,Jeff Pollack,6575,18,8,4
+109067.0,Paul Michael Glaser,7552,PG,21,6
+78721.0,Blake Edwards,12790,R,4,1
+117071.0,Pen Densham,3471,12,7,5
+4201004.0,Matthias Schweighöfer,1369,12,9,4
+819714.0,John Maybury,13901,Unrated,1,5
