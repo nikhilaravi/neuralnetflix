@@ -89,6 +89,3 @@ ENV/
 .ropeproject
 
 # Images
-**/*.jpg
-**/*.png
-
