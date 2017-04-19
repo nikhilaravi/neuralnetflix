@@ -36,12 +36,12 @@ def rgb2gray(rgb):
 ############# Read in posters for training set ################
 
 def load_posters_from_ids(id_array, n, y):
-    start = np.random.choice(range(len(id_array)-n))
-    end = start + n
+    # start = np.random.choice(range(len(id_array)-n))
+    # end = start + n
     posters = []
     ids = []
     errors = 0
-    for poster in id_array[start:end]:
+    for poster in id_array:
         img = mpimg.imread('../posters/' + str(int(poster[0])) + '.jpg')
         # grayscale image
         gray = rgb2gray(img)
@@ -88,8 +88,8 @@ def error_measures(ypred, ytest):
 
     return h_loss, percent_exact, percent_atleastone
 
-X_train_unshaped, Y_train = load_posters_from_ids(X_train_ids, 100, y_train)
-X_test_unshaped, Y_test = load_posters_from_ids(X_test_ids, 50, y_test)
+X_train_unshaped, Y_train = load_posters_from_ids(X_train_ids, len(X_train_ids), y_train)
+X_test_unshaped, Y_test = load_posters_from_ids(X_test_ids, len(X_test_ids), y_test)
 
 X_train = X_train_unshaped.reshape((X_train_unshaped.shape[0], -1))
 X_test = X_test_unshaped.reshape((X_test_unshaped.shape[0], -1))
@@ -103,48 +103,35 @@ pca = posters_pca.fit(X_train)
 # look at cumulative variance plot
 
 cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
-#
-# plt.figure(figsize=(10,5))
-# plt.plot(cumulative_variance) # explained variance ration
-# plt.xlabel('number of components')
-# plt.ylabel('proportion of variance explained')
-# plt.title('explained variance ratio')
 
 # # number of components to explain 90% of variance
 n90 = np.where(cumulative_variance>0.9)[0][0]
 print 'num components to explain 90% of variance ', n90
 
+###### Project testing and training data onto top n components
 
-################### REFIT PCA on training set and set num_components #####################################
+X_train_pca = np.dot(X_train, pca.components_[0:n90, :].T)
+X_test_pca = np.dot(X_test, pca.components_[0:n90, :].T)
 
-# fit PCA model
-posters_pca_tuned = PCA(n_components=48)
-pca_tuned = posters_pca_tuned.fit(X_train)
+############## Fit SVM model ######################
+Y_pred = OneVsRestClassifier(SVC(kernel='rbf')).fit(X_train_pca, Y_train).predict(X_test_pca)
 
-# ###### Project testing and training data onto top n components
-#
-# X_train_pca = pca_tuned.transform(X_train)
-# X_test_pca = pca_tuned.transform(X_test)
-#
-# ############## Fit SVM model ######################
-# Y_pred = OneVsRestClassifier(SVC(kernel='rbf')).fit(X_train_pca, Y_train).predict(X_test_pca)
-#
-# h_loss, percent_exact, percent_atleastone = error_measures(Y_pred, Y_test)
-#
-# print 'Untuned Radial SVM\n=====================\n'
-# print 'hamming: ', h_loss
-# print 'percent_exact: ', percent_exact
-# print 'percent_atleastone: ', percent_atleastone
-#
-# ############## Fit RF model ######################
-#
-# clf = RandomForestClassifier(n_estimators=25, random_state=0)
-#
-# Y_pred = OneVsRestClassifier(clf).fit(X_train_pca, Y_train).predict(X_test_pca)
-#
-# h_loss, percent_exact, percent_atleastone = error_measures(Y_pred, Y_test)
-#
-# print 'Untuned Random Forest \n=====================\n'
-# print 'hamming: ', h_loss
-# print 'percent_exact: ', percent_exact
-# print 'percent_atleastone: ', percent_atleastone
+h_loss, percent_exact, percent_atleastone = error_measures(Y_pred, Y_test)
+
+print 'Untuned Radial SVM\n=====================\n'
+print 'hamming: ', h_loss
+print 'percent_exact: ', percent_exact
+print 'percent_atleastone: ', percent_atleastone
+
+############## Fit RF model ######################
+
+clf = RandomForestClassifier(n_estimators=25, random_state=0)
+
+Y_pred = OneVsRestClassifier(clf).fit(X_train_pca, Y_train).predict(X_test_pca)
+
+h_loss, percent_exact, percent_atleastone = error_measures(Y_pred, Y_test)
+
+print 'Untuned Random Forest \n=====================\n'
+print 'hamming: ', h_loss
+print 'percent_exact: ', percent_exact
+print 'percent_atleastone: ', percent_atleastone
